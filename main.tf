@@ -261,7 +261,19 @@ resource "aws_autoscaling_group" "lab-asg" {
     propagate_at_launch = true 
    }
  }
+# CPU_target_tracing
+resource "aws_autoscaling_policy" "lab-cpu_target" {
+  name                   = "cpu-target-tracking"
+  policy_type            = "TargetTrackingScaling"
+  autoscaling_group_name = aws_autoscaling_group.lab-asg.name
 
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    } # 목표 메트릭 = 평균 CPU 사용률
+    target_value = 50.0 # CPU 사용률을 50%을 목표로 함. 목표 유지 위해 인스턴스 수 자동조정
+  }
+}
 # Auto-scaling Group + ALB 연결
 resource "aws_autoscaling_attachment" "lab-asg-alb" { # 오토 스케일링 그룹 생성
   autoscaling_group_name = aws_autoscaling_group.lab-asg.id # ALB와 연결할 오토스케일링 그룹의 이름 지정
