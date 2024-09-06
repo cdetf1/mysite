@@ -97,6 +97,20 @@ resource "aws_security_group" "lab-alb-sg" {
 }
 
 
+# ALB를 위한 Route 53 A 레코드 정의
+resource "aws_route53_record" "vote_subdomain" {
+  zone_id = "Z05664192S9WT2JIGY7BX" #기존 호스팅 영역 ID
+  name    = "vote.mirrorhk.click" # vote로 서브도메인 정의
+  type    = "A" #IPv4로 주소를 반환/타입 다양함
+
+  alias {
+    name                   = aws_lb.lab-alb.dns_name
+    zone_id                = aws_lb.lab-alb.zone_id
+    evaluate_target_health = true
+  }
+
+}
+
 
 # ami id를 통해 my-ami 가져오기
 data "aws_ami" "lab-template" {
