@@ -5,7 +5,8 @@ resource "aws_lb" "lab-alb" {
     name     = "lab-alb"
     internal = false # alb 외부에 생성 = 외부 인터넷과 연결가능해야함
     load_balancer_type = "application"
-    subnets = [aws_subnet.public-subnet-a.id, aws_subnet.public-subnet-b.id]
+    #subnets = [aws_subnet.public-subnet-a.id, aws_subnet.public-subnet-b.id]
+    subnets = [aws_subnet.public-subnet-a.id]
     security_groups = [aws_security_group.lab-alb-sg.id]
     tags = {
         Name = "lab-alb"
@@ -338,6 +339,34 @@ resource "aws_db_subnet_group" "lab-db-subnet-group"{
 }
  
 
+# resource "aws_db_instance" "lab-rds" {
+#   allocated_storage    = 20
+#   db_name              = "lab_rds"
+#   engine               = "mysql"
+#   engine_version       = "8.0"
+#   instance_class       = "db.t3.micro"
+#   username             = "admin"
+#   password             = "11111111"
+#   parameter_group_name = "default.mysql8.0"
+#   db_subnet_group_name = aws_db_subnet_group.lab-db-subnet-group.id
+#   vpc_security_group_ids = [aws_security_group.lab-rds-sg.id]
+#   skip_final_snapshot  = true # RDS 인스턴스를 삭제할 때 최종 백업용 스냅샷을 스킵할까요? -> yes
+#   multi_az             = true # 다중az 사용하려면 db인스턴스가 db.t3.micro 이상이어야함
+#   publicly_accessible  = false # 외부 접근 x ,ec2가 rds에 접근할 수 있게 해준다.
+
+#   tags = {
+#     Name = "lab-rds"
+#   }
+# }
+ 
+
+# Parameter Store에서 비밀번호를 가져오는 데이터 소스
+data "aws_ssm_parameter" "db_password" {
+  name = "/myapp/rds_password"
+  with_decryption = true  # 비밀번호가 암호화되어 저장되어 있을 경우
+}
+
+# RDS 인스턴스 생성
 resource "aws_db_instance" "lab-rds" {
   allocated_storage    = 20
   db_name              = "lab_rds"
@@ -345,16 +374,15 @@ resource "aws_db_instance" "lab-rds" {
   engine_version       = "8.0"
   instance_class       = "db.t3.micro"
   username             = "admin"
-  password             = "11111111"
+  password             = data.aws_ssm_parameter.db_password.value
   parameter_group_name = "default.mysql8.0"
   db_subnet_group_name = aws_db_subnet_group.lab-db-subnet-group.id
   vpc_security_group_ids = [aws_security_group.lab-rds-sg.id]
-  skip_final_snapshot  = true # RDS 인스턴스를 삭제할 때 최종 백업용 스냅샷을 스킵할까요? -> yes
-  multi_az             = true # 다중az 사용하려면 db인스턴스가 db.t3.micro 이상이어야함
-  publicly_accessible  = false # 외부 접근 x ,ec2가 rds에 접근할 수 있게 해준다.
+  skip_final_snapshot  = true
+  multi_az             = true
+  publicly_accessible  = false
 
   tags = {
     Name = "lab-rds"
   }
 }
- 

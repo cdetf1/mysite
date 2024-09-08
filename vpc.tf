@@ -26,17 +26,7 @@ resource "aws_subnet" "public-subnet-a" {
   
 }
 
-resource "aws_subnet" "public-subnet-b" {
-  vpc_id = aws_vpc.lab-vpc.id
-  cidr_block = "10.0.10.0/24"
 
-  availability_zone = "ap-northeast-2c"
-
-  tags = {
-    Name = "public-subnet-b"
-  }
-  
-}
 
 resource "aws_subnet" "app-subnet-a" {
   vpc_id = aws_vpc.lab-vpc.id
@@ -121,10 +111,10 @@ resource "aws_route_table_association" "rt-association-web-public-a" {
   route_table_id = aws_route_table.public-rt.id
 }
 
-resource "aws_route_table_association" "rt-association-web-public-b" {
-  subnet_id      = aws_subnet.public-subnet-b.id
-  route_table_id = aws_route_table.public-rt.id
-}
+# resource "aws_route_table_association" "rt-association-web-public-b" {
+#   subnet_id      = aws_subnet.public-subnet-b.id
+#   route_table_id = aws_route_table.public-rt.id
+# }
 
 
 # # Create Route Table for public-subnet-b
